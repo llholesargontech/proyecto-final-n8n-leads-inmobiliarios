@@ -138,11 +138,12 @@
         ]
       ]
     },
-    "Simple Vector Store - Ingesta": {
+    "Simple Vector Store - Ingesta": {},
+    "Embeddings Google Gemini - Ingesta": {
       "ai_embedding": [
         [
           {
-            "node": "Embeddings Google Gemini - Ingesta",
+            "node": "Simple Vector Store - Ingesta",
             "type": "ai_embedding",
             "index": 0
           }
@@ -156,7 +157,8 @@
   },
   "versionId": "sanitized-export",
   "meta": {
-    "templateCredsSetupCompleted": false
+    "templateCredsSetupCompleted": false,
+    "note": "Seleccionar la credencial propia de Gemini al importar."
   },
   "tags": []
 }
