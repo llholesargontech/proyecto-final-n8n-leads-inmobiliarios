@@ -200,6 +200,20 @@
         820,
         160
       ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const input = $input.first().json;\nlet parsed;\ntry { parsed = typeof input.output === \"string\" ? JSON.parse(input.output) : input.output; } catch (e) { parsed = null; }\nconst clases = [\"caliente\", \"tibio\", \"frio\", \"revision_humana\"];\nconst acciones = [\"contactar_agente\", \"enviar_opciones\", \"pedir_datos\", \"revision_humana\"];\nconst texto = JSON.stringify(parsed || {}).toLowerCase();\nconst salidaValida = parsed && clases.includes(parsed.clasificacion) && acciones.includes(parsed.accion) && typeof parsed.confianza === \"number\" && parsed.confianza >= 0 && parsed.confianza <= 1;\nconst promete = /confirmar visita|coordinar una visita|disponibilidad confirmada|precio exacto/.test(texto);\nconst final = salidaValida && !promete ? parsed : { clasificacion: \"revision_humana\", accion: \"revision_humana\", mensaje: \"La consulta queda pendiente de revision humana para evitar confirmar informacion no verificada.\", confianza: 0.5 };\nreturn [{ json: { output: JSON.stringify(final, null, 2) } }];"
+      },
+      "id": "c30101ac-4c58-47ff-9740-52fe305716fb",
+      "name": "Validar respuesta del agente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        160
+      ]
     }
   ],
   "connections": {
@@ -269,7 +283,7 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Validar respuesta del agente",
             "type": "main",
             "index": 0
           }
@@ -309,6 +323,17 @@
           {
             "node": "Embeddings Google Gemini",
             "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar respuesta del agente": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
             "index": 0
           }
         ]
