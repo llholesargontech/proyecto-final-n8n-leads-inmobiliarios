@@ -35,17 +35,13 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "1M9wAhutKVJHYw8w18ZPUpbb7t91mmhyD7g6kiEWI9o0",
-          "mode": "list",
-          "cachedResultName": "Checkpoint 1 - Leads",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1M9wAhutKVJHYw8w18ZPUpbb7t91mmhyD7g6kiEWI9o0/edit?usp=drivesdk"
+          "value": "",
+          "mode": "list"
         },
         "sheetName": {
           "__rl": true,
-          "value": 1002752864,
-          "mode": "list",
-          "cachedResultName": "Leads",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1M9wAhutKVJHYw8w18ZPUpbb7t91mmhyD7g6kiEWI9o0/edit#gid=1002752864"
+          "value": "",
+          "mode": "list"
         },
         "options": {}
       },
@@ -58,12 +54,6 @@
       "id": "005b6575-4c3f-41e3-8c15-b5ea6201fc63",
       "name": "Get row(s) in sheet",
       "retryOnFail": true,
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "vBK1rnw0a2asFh0G",
-          "name": "Google Sheets account"
-        }
-      },
       "onError": "continueRegularOutput"
     },
     {
@@ -94,14 +84,7 @@
         192
       ],
       "id": "379fdd0d-0c65-40a4-9131-85ef2d717e41",
-      "name": "Google Gemini Chat Model",
-      "credentials": {
-        "googlePalmApi": {
-          "id": null,
-          "name": "",
-          "__aiGatewayManaged": true
-        }
-      }
+      "name": "Google Gemini Chat Model"
     },
     {
       "parameters": {
@@ -133,14 +116,7 @@
         400
       ],
       "id": "0ed58474-86b5-4342-b77c-858ded09cc5c",
-      "name": "Embeddings Google Gemini",
-      "credentials": {
-        "googlePalmApi": {
-          "id": null,
-          "name": "",
-          "__aiGatewayManaged": true
-        }
-      }
+      "name": "Embeddings Google Gemini"
     },
     {
       "parameters": {
@@ -168,8 +144,7 @@
         48
       ],
       "id": "98d90a99-4c8c-4a67-ac79-34c5bd85612e",
-      "name": "Webhook",
-      "webhookId": "5fcb0410-8b18-4714-99cf-3065a67d9bfa"
+      "name": "Webhook"
     },
     {
       "parameters": {
@@ -260,14 +235,7 @@
         240
       ],
       "id": "ab32ea74-ea8c-4b68-ab90-ab9bfe43d61e",
-      "name": "Telegram Trigger",
-      "webhookId": "4b89b16e-5c98-427f-9278-835bee1e0c69",
-      "credentials": {
-        "telegramApi": {
-          "id": "4dBOC0MKvKjSRUq0",
-          "name": "Telegram account"
-        }
-      }
+      "name": "Telegram Trigger"
     },
     {
       "parameters": {
@@ -316,14 +284,7 @@
         -160
       ],
       "id": "96200d01-fd0a-4306-b7f9-c00c73ffc3ac",
-      "name": "Send a text message",
-      "webhookId": "554750e1-07ef-4662-9fa9-eb2a15be8c13",
-      "credentials": {
-        "telegramApi": {
-          "id": "4dBOC0MKvKjSRUq0",
-          "name": "Telegram account"
-        }
-      }
+      "name": "Send a text message"
     }
   ],
   "pinData": {},
@@ -491,17 +452,11 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "9a0ff740-6d12-4742-80f5-f5dff9fd76e0",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "887c9624ef4ecd63ca08981bd16dbac26a19cbefac0f976f537020b2439a6f95"
-  },
   "nodeGroups": [],
-  "id": "KST0rVksWMv2nvrQ",
   "tags": []
 }
