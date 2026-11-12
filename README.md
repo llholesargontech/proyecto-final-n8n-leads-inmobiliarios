@@ -114,4 +114,4 @@ El workflow se comparte sin credenciales ni referencias a una hoja de cálculo. 
 
 ## Estado de las pruebas
 
-Se probaron webhook y Telegram, la ingesta y recuperación de la política, una consulta sin texto por ambos canales y una falla simulada del modelo. Una repregunta en Telegram recordó el barrio anterior; una sesión de webhook diferente no recibió ese dato. Las capturas actuales deben reemplazarse por las de la versión final. No se probó concurrencia ni uso con múltiples instancias.
+Se probaron webhook y Telegram, la ingesta y recuperación de la política, una consulta sin texto por ambos canales y una falla simulada del modelo. Una repregunta en Telegram recordó el barrio anterior; una sesión de webhook diferente no recibió ese dato. Las capturas incluidas corresponden a la versión final del flujo y sus pruebas. No se probó concurrencia ni uso con múltiples instancias.
