@@ -108,4 +108,4 @@ No se suben claves, tokens ni datos personales.
 
 ## Estado de validacion
 
-El workflow principal queda preparado para probarse con un lead completo y con un mensaje vacio. La respuesta del agente pasa por un nodo de validacion antes de volver al webhook. La ingesta RAG se importa y se ejecuta por separado para cargar la base documental antes de probar el agente.
+El workflow principal fue probado con un lead completo y con un mensaje vacio. La respuesta del agente pasa por un nodo de validacion antes de volver al webhook. La Vector Store del flujo publicado ya tiene documentos cargados y se deja ademas un workflow separado para repetir la ingesta cuando haga falta.
