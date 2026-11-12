@@ -1,63 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
-<rect width="1200" height="620" fill="#f6f3ee"/>
-<style>
-text{font-family:Arial,sans-serif;fill:#252525}
-.t{font-size:24px;font-weight:bold}.s{font-size:15px}.n{font-size:18px;font-weight:bold}
-.b{fill:#fff;stroke:#555;stroke-width:2}.ai{fill:#edf5ed;stroke:#4b8b57;stroke-width:2}.side{fill:#faf8f4;stroke:#777;stroke-width:2}
-.a{stroke:#555;stroke-width:3;fill:none;marker-end:url(#m)}
-.d{stroke:#777;stroke-width:2;fill:none;stroke-dasharray:7 5;marker-end:url(#m2)}
-.label{font-size:14px;fill:#555}
-</style>
-<defs>
-<marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#555"/></marker>
-<marker id="m2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#777"/></marker>
-</defs>
-
-<text x="45" y="45" class="t">Precalificacion de leads inmobiliarios</text>
-<text x="45" y="73" class="s">flujo actual con validacion, agente y RAG</text>
-
-<rect x="40" y="135" width="150" height="70" rx="10" class="b"/>
-<text x="75" y="166" class="n">Webhook</text><text x="65" y="190" class="s">lead_id + mensaje</text>
-
-<rect x="235" y="135" width="160" height="70" rx="10" class="b"/>
-<text x="263" y="166" class="n">Edit Fields</text><text x="257" y="190" class="s">ordena la entrada</text>
-
-<rect x="440" y="135" width="175" height="70" rx="10" class="b"/>
-<text x="462" y="166" class="n">Google Sheets</text><text x="468" y="190" class="s">datos comerciales</text>
-
-<rect x="660" y="135" width="170" height="70" rx="10" class="b"/>
-<text x="700" y="166" class="n">Code</text><text x="680" y="190" class="s">unifica y valida</text>
-
-<rect x="875" y="135" width="120" height="70" rx="10" class="b"/>
-<text x="912" y="166" class="n">If</text><text x="887" y="190" class="s">datos OK</text>
-
-<path d="M190 170h45M395 170h45M615 170h45M830 170h45" class="a"/>
-
-<rect x="875" y="285" width="190" height="80" rx="10" class="ai"/>
-<text x="906" y="318" class="n">AI Agent</text><text x="897" y="343" class="s">clasifica y decide</text>
-
-<rect x="1050" y="135" width="120" height="70" rx="10" class="b"/>
-<text x="1062" y="166" class="n">Respond</text><text x="1065" y="190" class="s">JSON final</text>
-
-<path d="M935 205v80" class="a"/><text x="948" y="250" class="label">true</text>
-<path d="M995 170h55" class="a"/><text x="1003" y="158" class="label">false</text>
-<path d="M970 365v105h140V205" class="a"/><text x="985" y="455" class="label">respuesta de control</text>
-
-<rect x="650" y="455" width="190" height="70" rx="10" class="side"/>
-<text x="680" y="485" class="n">Google Gemini</text><text x="682" y="508" class="s">modelo de chat</text>
-
-<rect x="875" y="455" width="190" height="70" rx="10" class="side"/>
-<text x="900" y="485" class="n">Simple Memory</text><text x="895" y="508" class="s">sesion por lead_id</text>
-
-<rect x="420" y="285" width="220" height="80" rx="10" class="side"/>
-<text x="458" y="318" class="n">Simple Vector Store</text><text x="465" y="343" class="s">contexto documental</text>
-
-<rect x="420" y="455" width="220" height="70" rx="10" class="side"/>
-<text x="463" y="485" class="n">Gemini Embeddings</text><text x="463" y="508" class="s">gemini-embedding-2</text>
-
-<path d="M875 325H640" class="d"/><text x="730" y="314" class="label">tool RAG</text>
-<path d="M875 345H840V490" class="d"/><text x="842" y="425" class="label">memoria</text>
-<path d="M650 325H530V455" class="d"/>
-<path d="M640 490H530V365" class="d"/><text x="545" y="405" class="label">embeddings</text>
-<path d="M650 490H650V525" class="d"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="490" viewBox="0 0 1300 490">
+<rect width="1300" height="490" fill="#f6f3ee"/>
+<style>text{font:16px Arial;fill:#252525}.title{font-size:23px;font-weight:bold}.box{fill:white;stroke:#555;stroke-width:2}.ai{fill:#edf5ed;stroke:#4b8b57;stroke-width:2}.line{fill:none;stroke:#555;stroke-width:2;marker-end:url(#arrow)}.dash{stroke-dasharray:5 5}</style>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8z" fill="#555"/></marker></defs>
+<text x="35" y="42" class="title">Precalificación de leads inmobiliarios</text>
+<g class="box"><rect x="35" y="90" width="130" height="50" rx="7"/><rect x="35" y="180" width="130" height="50" rx="7"/><rect x="215" y="135" width="130" height="50" rx="7"/><rect x="385" y="135" width="145" height="50" rx="7"/><rect x="570" y="135" width="115" height="50" rx="7"/><rect x="725" y="135" width="70" height="50" rx="7"/><rect x="975" y="135" width="135" height="50" rx="7"/><rect x="1145" y="90" width="130" height="50" rx="7"/><rect x="1145" y="190" width="130" height="50" rx="7"/></g>
+<rect x="830" y="135" width="110" height="50" rx="7" class="ai"/>
+<text x="65" y="120">Webhook</text><text x="54" y="210">Telegram</text><text x="235" y="165">Edit Fields</text><text x="402" y="165">Google Sheets</text><text x="592" y="165">Code</text><text x="748" y="165">If</text><text x="849" y="165">AI Agent</text><text x="989" y="165">Validar + If1</text><text x="1158" y="120">Telegram</text><text x="1156" y="220">Respuesta HTTP</text>
+<path class="line" d="M165 115 L215 150 M165 205 L215 170 M345 160 H385 M530 160 H570 M685 160 H725 M795 160 H830 M940 160 H975 M1110 150 L1145 115 M1110 170 L1145 215"/>
+<text x="760" y="260">Gemini · Simple Memory · Simple Vector Store + embeddings</text>
+<path class="line dash" d="M885 250 V190"/>
+<text x="35" y="340">Ingesta: documento → Vector Store, con Data Loader, fragmentación y embeddings.</text>
+<text x="35" y="380">La salida de error del primer If usa Respond to Webhook; falta una rama de error específica para Telegram.</text>
 </svg>
