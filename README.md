@@ -23,7 +23,7 @@ Desde el If salen dos caminos:
 
 Google Sheets aporta una segunda fuente con datos comerciales. El Code ordena las filas, conserva el mensaje original, identifica el lead y calcula si ya estan presentes el tipo de propiedad, la zona y el presupuesto.
 
-El agente usa Gemini, memoria simple por lead y una Simple Vector Store con embeddings de Gemini.
+El agente usa Gemini, memoria simple por lead y una Simple Vector Store con `models/gemini-embedding-2`.
 
 ![Canvas del workflow](capturas/flow-n8n.png)
 
@@ -56,7 +56,7 @@ Una cadena simple podria redactar un texto, pero en este caso el nodo tiene que 
 
 ## RAG y memoria
 
-La Simple Vector Store se usa como herramienta del agente. Los embeddings de Gemini permiten buscar los fragmentos relacionados con la consulta.
+La Simple Vector Store se usa como herramienta del agente. Los embeddings de Gemini permiten buscar los fragmentos relacionados con la consulta. En este flujo se usa el modelo `models/gemini-embedding-2`, que es el disponible en la cuenta de n8n.
 
 La base documental se carga previamente en la Vector Store del prototipo. En una version siguiente se puede separar esa carga en un workflow de ingesta con Document Loader, Text Splitter y el mismo modelo de embeddings.
 
