@@ -23,7 +23,7 @@ Desde el If salen dos caminos:
 
 Google Sheets aporta una segunda fuente con datos comerciales. El Code ordena las filas, conserva el mensaje original, identifica el lead y calcula si ya estan presentes el tipo de propiedad, la zona y el presupuesto.
 
-El agente usa Gemini, memoria simple por lead y una Simple Vector Store con `models/gemini-embedding-2`.
+El agente usa Gemini, memoria simple por lead y una Simple Vector Store con `models/gemini-embedding-2`. La entrada tiene dos fuentes: el Webhook trae el mensaje del lead y Google Sheets aporta los datos comerciales que se usan antes de decidir.
 
 ![Canvas del workflow](capturas/flow-n8n.png)
 
@@ -46,9 +46,9 @@ En una prueba completa el flujo devolvio una clasificacion y una accion concreta
 
 ## Eleccion del modelo
 
-Para este prototipo se eligio Gemini en la nube. El volumen esperado es bajo y permite probar el agente sin mantener una maquina con Ollama encendida. Tambien simplifica la conexion con embeddings y el uso de n8n Cloud.
+Para este prototipo se eligio Gemini en la nube. El volumen esperado es bajo y el costo por consulta es menor que mantener una maquina con Ollama encendida. Tambien simplifica la conexion con embeddings y el uso de n8n Cloud.
 
-La contra es depender de internet y del proveedor. Por eso el prompt limita lo que puede afirmar y el flujo agrega reintentos y continuidad en Google Sheets.
+La contra es que el mensaje sale hacia un proveedor externo y que la respuesta depende de internet. Por eso el flujo no envia datos personales innecesarios, usa un identificador de lead y agrega reintentos en Google Sheets. La latencia es adecuada para un primer filtro; si el volumen sube mucho conviene evaluar un modelo local o una arquitectura hibrida.
 
 ## Por que un AI Agent
 
@@ -58,7 +58,7 @@ Una cadena simple podria redactar un texto, pero en este caso el nodo tiene que 
 
 La Simple Vector Store se usa como herramienta del agente. Los embeddings de Gemini permiten buscar los fragmentos relacionados con la consulta. En este flujo se usa el modelo `models/gemini-embedding-2`, que es el disponible en la cuenta de n8n.
 
-La carga documental esta separada en [workflow-ingesta-rag.json](workflow-ingesta-rag.json). Ese flujo usa Manual Trigger, Default Data Loader, Recursive Character Text Splitter, Simple Vector Store y el mismo modelo de embeddings. Primero se ejecuta la ingesta y despues se prueba el workflow principal.
+La carga documental esta separada en [workflow-ingesta-rag.json](workflow-ingesta-rag.json). Ese flujo usa Manual Trigger, Default Data Loader, Recursive Character Text Splitter, Simple Vector Store y el mismo modelo de embeddings. El splitter alimenta al Data Loader y el Data Loader guarda los documentos en la Vector Store, sin un recorrido circular. Primero se ejecuta la ingesta y despues se prueba el workflow principal.
 
 La memoria simple usa `lead_id` como clave de sesion y guarda las ultimas interacciones de cada lead.
 
@@ -82,7 +82,7 @@ Google Sheets tiene reintentos y queda configurado para continuar con el mensaje
 
 El If valida el mensaje y el estado de la hoja antes de dejar pasar la consulta al agente. Si no hay mensaje, si la hoja esta vacia o si la API devuelve un error, la ejecucion no queda esperando y la respuesta se mantiene en el camino de revision.
 
-El prompt tambien funciona como limite: no inventa informacion, no confirma visitas y deriva los casos ambiguos. Antes de responder, el flujo valida los campos del JSON y reemplaza clasificaciones invalidas por revision_humana. Esto evita que una salida del modelo termine confirmando una visita o una disponibilidad que no fueron verificadas.
+El prompt tambien funciona como limite: no inventa informacion, no confirma visitas y deriva los casos ambiguos. Antes de responder, el nodo Validar respuesta del agente revisa los campos del JSON y reemplaza clasificaciones invalidas o mensajes que prometan una visita por revision_humana. Esto evita que una salida del modelo termine confirmando una visita o una disponibilidad que no fueron verificadas.
 
 ![Resultado de prueba](capturas/resultado-prueba.png)
 
@@ -104,3 +104,8 @@ Las credenciales y los identificadores reales no se incluyen en el repositorio. 
 5. Revisar el JSON que devuelve Respond to Webhook.
 
 No se suben claves, tokens ni datos personales.
+
+
+## Estado de validacion
+
+El workflow principal queda preparado para probarse con un lead completo y con un mensaje vacio. La respuesta del agente pasa por un nodo de validacion antes de volver al webhook. La ingesta RAG se importa y se ejecuta por separado para cargar la base documental antes de probar el agente.
