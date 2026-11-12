@@ -8,13 +8,13 @@
             {
               "id": "54b9eb0b-7f17-4699-84d9-487d14fac899",
               "name": "mensaje",
-              "value": "={{ $json.query.mensaje || $json.mensaje || $json.body?.mensaje || \"\" }}",
+              "value": "={{ $json.query?.mensaje || $json.mensaje || $json.body?.mensaje || $json.message?.text || \"\" }}",
               "type": "string"
             },
             {
               "id": "876b4883-6241-4350-bb21-2d1e64444377",
               "name": "lead_id",
-              "value": "={{ $json.query.lead_id || $json.lead_id || $json.body?.lead_id || \"demo-lead-001\" }}",
+              "value": "={{ $json.query?.lead_id || $json.lead_id || $json.body?.lead_id || ($json.message?.chat?.id ? \"telegram:\" + $json.message.chat.id : \"demo-lead-001\") }}",
               "type": "string"
             }
           ]
@@ -69,7 +69,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "Mensaje del lead: {{ $json.mensaje || \"sin mensaje\" }}. Identificador: {{ $json.lead_id || \"sin identificador\" }}. Validacion previa del flujo: datos_completos={{ $json.datos_completos }}, accion_sugerida={{ $json.accion_sugerida }}. Datos de Google Sheets: {{ JSON.stringify($json.sheet_data || []) }}. Si datos_completos es true, no pidas informacion adicional y usa la accion_sugerida o contactar_agente. Usa el contexto de la base documental cuando exista. Devuelve solo JSON valido con clasificacion, accion, mensaje y confianza.",
+        "text": "=Mensaje del lead: {{ $json.mensaje }}. Identificador: {{ $json.lead_id }}. Validación: datos_completos={{ $json.datos_completos }}, acción sugerida={{ $json.accion_sugerida }}. Usá el contexto de la base documental cuando exista. Devolvé solo JSON válido con clasificacion, accion, mensaje y confianza.",
         "options": {
           "systemMessage": "Sos un agente de precalificacion comercial para una inmobiliaria. La entrada incluye datos calculados por nodos anteriores. Regla prioritaria: si datos_completos=true, consideralo una validacion confiable. En ese caso esta prohibido clasificar como frio, usar pedir_datos o volver a preguntar tipo de propiedad, zona o presupuesto. Debes clasificar como tibio y usar enviar_opciones, o como caliente y usar contactar_agente. Si datos_completos=false, usa pedir_datos solo por los datos que falten. Analiza tambien Google Sheets y el contexto RAG, pero no contradigas la validacion previa salvo que encuentres una contradiccion clara. Si la base documental no tiene coincidencias, continua con los datos disponibles. No inventes precios, disponibilidad, requisitos ni caracteristicas. No confirmes visitas ni prometas operaciones. Responde en español, claro y breve. Devuelve solo JSON valido, sin markdown, con clasificacion, accion, mensaje y confianza. La confianza debe ser un numero entre 0 y 1."
         }
@@ -173,7 +173,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const rows = $input.all().map(item => item.json);\nconst source = $(\"Edit Fields\").first().json;\nconst leadMessage = source.mensaje || \"\";\nconst leadId = source.lead_id || \"demo-lead-001\";\nconst normalized = leadMessage.toLowerCase();\nconst hasProperty = /(departamento|casa|ph|local|terreno|oficina)/.test(normalized);\nconst hasZone = /(caballito|palermo|belgrano|recoleta|zona|barrio)/.test(normalized);\nconst hasBudget = /[0-9]/.test(normalized);\nconst datosCompletos = hasProperty && hasZone && hasBudget;\nconst accionSugerida = datosCompletos ? \"enviar_opciones\" : \"pedir_datos\";\nconst sheetOk = rows.length > 0 && !rows.some(row => row.error || row.errorMessage || row.statusCode >= 400);\nconst valid = leadMessage.trim().length > 0 && sheetOk;\nreturn [{ json: { valid, sheet_ok: sheetOk, lead_id: leadId, mensaje: leadMessage, datos_completos: datosCompletos, accion_sugerida: accionSugerida, sheet_data: rows } }];"
+        "jsCode": "const rows = $input.all().map(item => item.json);\nconst source = $(\"Edit Fields\").first().json;\nconst leadMessage = source.mensaje || \"\";\nconst leadId = source.lead_id || \"demo-lead-001\";\nconst sessionId = source.session_id || leadId;\nconst canal = source.canal || \"webhook\";\nconst telegramChatId = source.telegram_chat_id || null;\nconst remitenteId = source.remitente_id || leadId;\nconst remitenteNombre = source.remitente_nombre || \"\";\nconst normalized = leadMessage.toLowerCase();\nconst hasProperty = /(departamento|casa|ph|local|terreno|oficina)/.test(normalized);\nconst hasZone = /(caballito|palermo|belgrano|recoleta|zona|barrio)/.test(normalized);\nconst hasBudget = /[0-9]/.test(normalized);\nconst datosCompletos = hasProperty && hasZone && hasBudget;\nconst accionSugerida = datosCompletos ? \"enviar_opciones\" : \"pedir_datos\";\nconst sheetOk = rows.length > 0 && !rows.some(row => row.error || row.errorMessage || row.statusCode >= 400);\nconst valid = leadMessage.trim().length > 0 && sheetOk;\nreturn [{ json: { valid, sheet_ok: sheetOk, lead_id: leadId, session_id: sessionId, canal, telegram_chat_id: telegramChatId, remitente_id: remitenteId, remitente_nombre: remitenteNombre, mensaje: leadMessage, datos_completos: datosCompletos, accion_sugerida: accionSugerida, sheet_data: rows } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -196,7 +196,7 @@
           "conditions": [
             {
               "id": "f223553b-92a3-4e0a-83fe-dbaba7ba1b8d",
-              "leftValue": "=={{ $json.valid }}",
+              "leftValue": "={{ $json.valid }}",
               "rightValue": "",
               "operator": {
                 "type": "boolean",
@@ -222,7 +222,7 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $json.lead_id || \"demo-lead-001\" }}"
+        "sessionKey": "={{ \"reset-2026-11:\" + ($json.session_id || $json.lead_id || \"demo-lead-001\") }}"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.4,
@@ -235,7 +235,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nlet parsed;\ntry { parsed = typeof input.output === \"string\" ? JSON.parse(input.output) : input.output; } catch (e) { parsed = null; }\nconst clases = [\"caliente\", \"tibio\", \"frio\", \"revision_humana\"];\nconst acciones = [\"contactar_agente\", \"enviar_opciones\", \"pedir_datos\", \"revision_humana\"];\nconst texto = JSON.stringify(parsed || {}).toLowerCase();\nconst salidaValida = parsed && clases.includes(parsed.clasificacion) && acciones.includes(parsed.accion) && typeof parsed.confianza === \"number\" && parsed.confianza >= 0 && parsed.confianza <= 1;\nconst promete = /confirmar visita|coordinar una visita|disponibilidad confirmada|precio exacto/.test(texto);\nconst final = salidaValida && !promete ? parsed : { clasificacion: \"revision_humana\", accion: \"revision_humana\", mensaje: \"La consulta queda pendiente de revision humana para evitar confirmar informacion no verificada.\", confianza: 0.5 };\nconst canal = $(\"Edit Fields\").first().json.message?.chat?.id ? \"telegram\" : \"webhook\";\nreturn [{ json: { output: JSON.stringify(final, null, 2), canal } }];"
+        "jsCode": "const input = $input.first().json;\nlet parsed;\ntry { parsed = typeof input.output === \"string\" ? JSON.parse(input.output) : input.output; } catch (e) { parsed = null; }\nconst clases = [\"caliente\", \"tibio\", \"frio\", \"revision_humana\"];\nconst acciones = [\"contactar_agente\", \"enviar_opciones\", \"pedir_datos\", \"revision_humana\"];\nconst texto = JSON.stringify(parsed || {}).toLowerCase();\nconst salidaValida = parsed && clases.includes(parsed.clasificacion) && acciones.includes(parsed.accion) && typeof parsed.confianza === \"number\" && parsed.confianza >= 0 && parsed.confianza <= 1;\nconst promete = /confirmar visita|coordinar una visita|disponibilidad confirmada|precio exacto/.test(texto);\nconst final = salidaValida && !promete ? parsed : { clasificacion: \"revision_humana\", accion: \"revision_humana\", mensaje: \"La consulta queda pendiente de revision humana para evitar confirmar informacion no verificada.\", confianza: 0.5 };\nconst source = $(\"Edit Fields\").first().json;\nconst telegramMessage = source.message || source.body?.message || {};\nconst chatId = telegramMessage.chat?.id || null;\nconst canal = chatId ? \"telegram\" : \"webhook\";\nconst leadId = source.lead_id || \"demo-lead-001\";\nconst sessionId = chatId ? `telegram:${chatId}` : leadId;\nreturn [{ json: { output: JSON.stringify(final, null, 2), canal, chat_id: chatId, session_id: sessionId, remitente_id: telegramMessage.from?.id || leadId } }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -275,23 +275,23 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict",
+            "typeValidation": "loose",
             "version": 4
           },
           "conditions": [
             {
               "id": "5c9daa85-d1db-46fc-a50f-4b85826614d9",
-              "leftValue": "=={{ $json.canal }}\n",
+              "leftValue": "={{ String($json.canal || '').trim().toLowerCase() }}",
               "rightValue": "telegram",
               "operator": {
                 "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
+                "operation": "equals"
               }
             }
           ],
           "combinator": "and"
         },
+        "looseTypeValidation": true,
         "options": {}
       },
       "type": "n8n-nodes-base.if",
@@ -305,8 +305,8 @@
     },
     {
       "parameters": {
-        "chatId": "=={{ $(\"Edit Fields\").first().json.message.chat.id }}\n",
-        "text": "=={{ typeof $json.output === \"string\" ? JSON.parse($json.output).mensaje : $json.output.mensaje }}\n",
+        "chatId": "={{ String($json.chat_id) }}",
+        "text": "={{ typeof $json.output === \"string\" ? JSON.parse($json.output).mensaje : $json.output.mensaje }}",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -326,54 +326,7 @@
       }
     }
   ],
-  "pinData": {
-    "Webhook": [
-      {
-        "json": {
-          "headers": {
-            "host": "lucasholes1.app.n8n.cloud",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,image/apng,*/*;q=0.8",
-            "accept-encoding": "gzip, br",
-            "accept-language": "es-ES,es;q=0.5",
-            "cdn-loop": "cloudflare; loops=1; subreqs=1",
-            "cf-connecting-ip": "190.210.192.116",
-            "cf-ew-via": "15",
-            "cf-ipcountry": "AR",
-            "cf-ray": "a591ee187ddc0ec6-EZE",
-            "cf-visitor": "{\"scheme\":\"https\"}",
-            "cf-worker": "n8n.cloud",
-            "cookie": "rl_page_init_referrer=%22https%3A%2F%2Fsearch.brave.com%2F%22; rl_page_init_referring_domain=%22search.brave.com%22; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19QXlBCODemScKfFpDzEJF61IdneexPw405Q6DeoaA3Hb%2FRn7VSDlSiFPY9DdPSdC2t76BEMw%2FuIA%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2FDKbRucNTuxVDr3I55SR31aQmeo259DlQpDgU4bfVG0owycSRyKtA9IHL6T10x3cx8O7z2vo4rBGJeV%2FPYR%2BVTRgL0uYuJrm5WbCWWo11RXM7LnNQg%2BOGGXlQLEVsMWaGBETyGzdNX08FI0cT39BO65wW%2FCqWrYeg%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19O6vCsrTlj9ghrtNfggNV%2B0q4e73KvcP%2BECzjtaHLWP7PiT9bUuI%2FNqRdJsrd1AoVbUb8KpGtpUhTR7dSO%2BKyr8psGiCBJTm6zf%2B35Ga%2FAk48mgajfVVv2mG2449GJCT0POHSor8yu42twJlwMNiQn3vwi8xNvmubS24KI%2BfK7EZC%2Bxq5yxEj5Hd0TxWbA1sAexo8vzf%2Fh%2F5i5N9IB3OlNZJomUiofFLA%3D; n8n_anonymous_id=67d7897d-317b-4bc1-93f8-ab83ba1caf2d; rl_session=RudderEncrypt%3AU2FsdGVkX1%2B3q4bIUJQ1CL8LlyBSKQhrGXrDJ9c02adhw%2BOnZvtLM6gDPwbSCyWszaPXrzxOEX8WJGy%2F2u5YICN%2BJ%2FWYqu%2F1XIMKhmdaSHuUEEzikv625OeX2ssmZaTD2EyxnG1v%2Fk9%2BX4AzYxPUBA%3D%3D; ph_phc_kMstNfAgBcBkWSh6KdsgN09heqqNe5VNmalHP1Ni9Q4_posthog=%7B%22%24device_id%22%3A%2201a1cd79-2b1f-7494-b4a7-ef0c3a3fbd9d%22%2C%22distinct_id%22%3A%22887c9624ef4ecd63ca08981bd16dbac26a19cbefac0f976f537020b2439a6f95%239652529f-723b-4fbc-bd27-e1711de5878c%22%2C%22%24sesid%22%3A%5B1794448690203%2C%2201a1cd6e-97df-7804-a329-ce288f62c682%22%2C1794447939549%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Flucasholes1.app.n8n.cloud%2Fworkflow%2FeZiqbIPM5f0cQEMz%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
-            "priority": "u=0, i",
-            "sec-ch-ua": "\"Not-A.Brand\";v=\"99\", \"Brave\";v=\"157\", \"Chromium\";v=\"157\"",
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": "\"Windows\"",
-            "sec-fetch-dest": "document",
-            "sec-fetch-mode": "navigate",
-            "sec-fetch-site": "none",
-            "sec-fetch-user": "?1",
-            "sec-gpc": "1",
-            "upgrade-insecure-requests": "1",
-            "x-forwarded-for": "190.210.192.116, 172.68.216.134",
-            "x-forwarded-host": "lucasholes1.app.n8n.cloud",
-            "x-forwarded-port": "443",
-            "x-forwarded-proto": "https",
-            "x-forwarded-server": "traefik-prod-users-gwc-20-76b98d8c9d-64w9n",
-            "x-is-trusted": "yes",
-            "x-real-ip": "190.210.192.116"
-          },
-          "params": {},
-          "query": {},
-          "body": {},
-          "webhookUrl": "https://lucasholes1.app.n8n.cloud/webhook-test/precalificacion-leads",
-          "executionMode": "test"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Edit Fields": {
       "main": [
@@ -543,7 +496,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "5ce11391-e4f1-4515-89ee-c6f605d489e6",
+  "versionId": "9a0ff740-6d12-4742-80f5-f5dff9fd76e0",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "887c9624ef4ecd63ca08981bd16dbac26a19cbefac0f976f537020b2439a6f95"
