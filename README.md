@@ -111,7 +111,3 @@ El workflow se comparte sin credenciales ni referencias a una hoja de cálculo. 
 5. Probar el Webhook con `lead_id` y `mensaje`.
 6. Enviar un mensaje al bot de Telegram y revisar la ejecucion.
 7. Verificar que la respuesta salga por el mismo canal de entrada.
-
-## Estado de las pruebas
-
-Se probaron webhook y Telegram, la ingesta y recuperación de la política, una consulta sin texto por ambos canales y una falla simulada del modelo. Una repregunta en Telegram recordó el barrio anterior; una sesión de webhook diferente no recibió ese dato. Las capturas incluidas corresponden a la versión final del flujo y sus pruebas. No se probó concurrencia ni uso con múltiples instancias.
