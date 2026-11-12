@@ -1,0 +1,171 @@
+{
+  "name": "Ingesta RAG - Base documental inmobiliaria",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ingesta-manual",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "doc-text",
+              "name": "documento",
+              "type": "string",
+              "value": "Política comercial inmobiliaria. Los leads con tipo de propiedad, zona y presupuesto completos pasan a enviar opciones o contacto con un asesor. No se confirman visitas ni se inventan precios o disponibilidad. Las consultas ambiguas se derivan a revisión humana."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ingesta-documento",
+      "name": "Documento base",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "dataType": "json",
+        "jsonData": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "ingesta-loader",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chunkSize": 800,
+        "chunkOverlap": 100
+      },
+      "id": "ingesta-splitter",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "memoryKey": "vector_store_key"
+      },
+      "id": "ingesta-store",
+      "name": "Simple Vector Store - Ingesta",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-embedding-2",
+        "options": {}
+      },
+      "id": "ingesta-embeddings",
+      "name": "Embeddings Google Gemini - Ingesta",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        220,
+        220
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Documento base",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Documento base": {
+      "main": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Simple Vector Store - Ingesta",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ],
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Recursive Character Text Splitter",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Vector Store - Ingesta": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Embeddings Google Gemini - Ingesta",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "sanitized-export",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
