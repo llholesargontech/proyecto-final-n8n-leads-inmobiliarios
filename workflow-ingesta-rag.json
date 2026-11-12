@@ -125,15 +125,6 @@
             "index": 0
           }
         ]
-      ],
-      "ai_textSplitter": [
-        [
-          {
-            "node": "Recursive Character Text Splitter",
-            "type": "ai_textSplitter",
-            "index": 0
-          }
-        ]
       ]
     },
     "Recursive Character Text Splitter": {
