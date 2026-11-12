@@ -14,7 +14,7 @@
             {
               "id": "876b4883-6241-4350-bb21-2d1e64444377",
               "name": "lead_id",
-              "value": "={{ $json.query?.lead_id || $json.lead_id || $json.body?.lead_id || ($json.message?.chat?.id ? \"telegram:\" + $json.message.chat.id : \"demo-lead-001\") }}",
+              "value": "={{ $json.query?.lead_id || $json.lead_id || $json.body?.lead_id || ($json.message?.chat?.id ? \"telegram:\" + $json.message.chat.id : \"webhook-anonimo:\" + $execution.id) }}",
               "type": "string"
             }
           ]
@@ -61,7 +61,7 @@
         "promptType": "define",
         "text": "=Mensaje del lead: {{ $json.mensaje }}. Identificador: {{ $json.lead_id }}. Validación: datos_completos={{ $json.datos_completos }}, acción sugerida={{ $json.accion_sugerida }}. Usá el contexto de la base documental cuando exista. Devolvé solo JSON válido con clasificacion, accion, mensaje y confianza.",
         "options": {
-          "systemMessage": "Sos un agente de precalificacion comercial para una inmobiliaria. La entrada incluye datos calculados por nodos anteriores. Regla prioritaria: si datos_completos=true, consideralo una validacion confiable. En ese caso esta prohibido clasificar como frio, usar pedir_datos o volver a preguntar tipo de propiedad, zona o presupuesto. Debes clasificar como tibio y usar enviar_opciones, o como caliente y usar contactar_agente. Si datos_completos=false, usa pedir_datos solo por los datos que falten. Analiza tambien Google Sheets y el contexto RAG, pero no contradigas la validacion previa salvo que encuentres una contradiccion clara. Si la base documental no tiene coincidencias, continua con los datos disponibles. No inventes precios, disponibilidad, requisitos ni caracteristicas. No confirmes visitas ni prometas operaciones. Responde en español, claro y breve. Devuelve solo JSON valido, sin markdown, con clasificacion, accion, mensaje y confianza. La confianza debe ser un numero entre 0 y 1."
+          "systemMessage": "Sos un agente de precalificación para una inmobiliaria. Respondé en español, breve y claro. Usá la memoria de esta conversación para conservar tipo de propiedad, zona y presupuesto ya indicados. La validación datos_completos solo analiza el mensaje actual, no el historial; no repitas preguntas si el dato aparece en memoria. Si preguntan qué dato mencionaron, respondé según el historial. Consultá la herramienta documental para políticas. Si no devuelve información suficiente para una pregunta documental, indicá que no está disponible y recomendá revisión humana; no inventes ni pidas datos como condición para responder. Si hay ambigüedad o la consulta excede tu alcance, indicá que requiere revisión humana sin afirmar que alguien fue avisado o que ya se derivó. Podés clasificar como frio, tibio, caliente o revision_humana y elegir pedir_datos, enviar_opciones, contactar_agente o revision_humana. La acción es una recomendación interna: no afirmes que se preparan o enviarán opciones, que alguien fue contactado o que se confirmó una visita. No inventes disponibilidad, precios, moneda ni plazos. Si los datos están completos, agradecé e indicá que requiere evaluación. Devolvé solo JSON válido con clasificacion, accion, mensaje y confianza entre 0 y 1."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -71,7 +71,8 @@
         -32
       ],
       "id": "89b8db6e-70bb-419a-95b5-940a8cee8291",
-      "name": "AI Agent"
+      "name": "AI Agent",
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -92,8 +93,8 @@
         "toolDescription": "Busca políticas comerciales, criterios de atención y datos de referencia para responder consultas de leads inmobiliarios. Usá este contexto antes de decidir una clasificación o una acción.",
         "memoryKey": {
           "__rl": true,
-          "mode": "list",
-          "value": "vector_store_key"
+          "mode": "id",
+          "value": "proyecto_final_inmobiliaria_v1"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.vectorStoreInMemory",
@@ -148,7 +149,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const rows = $input.all().map(item => item.json);\nconst source = $(\"Edit Fields\").first().json;\nconst leadMessage = source.mensaje || \"\";\nconst leadId = source.lead_id || \"demo-lead-001\";\nconst sessionId = source.session_id || leadId;\nconst canal = source.canal || \"webhook\";\nconst telegramChatId = source.telegram_chat_id || null;\nconst remitenteId = source.remitente_id || leadId;\nconst remitenteNombre = source.remitente_nombre || \"\";\nconst normalized = leadMessage.toLowerCase();\nconst hasProperty = /(departamento|casa|ph|local|terreno|oficina)/.test(normalized);\nconst hasZone = /(caballito|palermo|belgrano|recoleta|zona|barrio)/.test(normalized);\nconst hasBudget = /[0-9]/.test(normalized);\nconst datosCompletos = hasProperty && hasZone && hasBudget;\nconst accionSugerida = datosCompletos ? \"enviar_opciones\" : \"pedir_datos\";\nconst sheetOk = rows.length > 0 && !rows.some(row => row.error || row.errorMessage || row.statusCode >= 400);\nconst valid = leadMessage.trim().length > 0 && sheetOk;\nreturn [{ json: { valid, sheet_ok: sheetOk, lead_id: leadId, session_id: sessionId, canal, telegram_chat_id: telegramChatId, remitente_id: remitenteId, remitente_nombre: remitenteNombre, mensaje: leadMessage, datos_completos: datosCompletos, accion_sugerida: accionSugerida, sheet_data: rows } }];"
+        "jsCode": "const rows = $input.all().map(item => item.json);\nconst source = $('Edit Fields').first().json;\nconst mensaje = String(source.mensaje || '').trim();\nconst leadId = String(source.lead_id || '');\nconst tg = source.message || source.body?.message || {};\nconst chatId = tg.chat?.id || null;\nconst canal = chatId ? 'telegram' : 'webhook';\nconst sheetOk = rows.length > 0 && !rows.some(row => row.error || row.errorMessage || row.statusCode >= 400);\nconst valid = Boolean(mensaje && leadId && sheetOk);\nconst normal = mensaje.toLowerCase();\nconst propiedad = /(departamento|casa|ph|local|terreno|oficina)/.test(normal);\nconst zona = /(caballito|palermo|belgrano|recoleta|zona|barrio)/.test(normal);\nconst presupuesto = /(?:presupuesto|usd|us\\$|d[oó]lares|\\$)\\s*[:=]?\\s*\\d|\\d[\\d.,]*\\s*(?:usd|d[oó]lares)/i.test(normal);\nconst completos = propiedad && zona && presupuesto;\nconst fallback = {clasificacion:'revision_humana',accion:'revision_humana',mensaje: sheetOk ? 'No recibí una consulta válida. Por favor escribí tu mensaje.' : 'No pude procesar la consulta en este momento. Requiere revisión humana.',confianza:0};\nreturn [{json:{valid,sheet_ok:sheetOk,lead_id:leadId,session_id:leadId,canal,chat_id:chatId,mensaje,datos_completos:completos,accion_sugerida:completos?'enviar_opciones':'pedir_datos',output:JSON.stringify(fallback)}}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -210,7 +211,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nlet parsed;\ntry { parsed = typeof input.output === \"string\" ? JSON.parse(input.output) : input.output; } catch (e) { parsed = null; }\nconst clases = [\"caliente\", \"tibio\", \"frio\", \"revision_humana\"];\nconst acciones = [\"contactar_agente\", \"enviar_opciones\", \"pedir_datos\", \"revision_humana\"];\nconst texto = JSON.stringify(parsed || {}).toLowerCase();\nconst salidaValida = parsed && clases.includes(parsed.clasificacion) && acciones.includes(parsed.accion) && typeof parsed.confianza === \"number\" && parsed.confianza >= 0 && parsed.confianza <= 1;\nconst promete = /confirmar visita|coordinar una visita|disponibilidad confirmada|precio exacto/.test(texto);\nconst final = salidaValida && !promete ? parsed : { clasificacion: \"revision_humana\", accion: \"revision_humana\", mensaje: \"La consulta queda pendiente de revision humana para evitar confirmar informacion no verificada.\", confianza: 0.5 };\nconst source = $(\"Edit Fields\").first().json;\nconst telegramMessage = source.message || source.body?.message || {};\nconst chatId = telegramMessage.chat?.id || null;\nconst canal = chatId ? \"telegram\" : \"webhook\";\nconst leadId = source.lead_id || \"demo-lead-001\";\nconst sessionId = chatId ? `telegram:${chatId}` : leadId;\nreturn [{ json: { output: JSON.stringify(final, null, 2), canal, chat_id: chatId, session_id: sessionId, remitente_id: telegramMessage.from?.id || leadId } }];"
+        "jsCode": "const input = $input.first().json;\nlet parsed;\ntry { parsed = typeof input.output === 'string' ? JSON.parse(input.output) : input.output; } catch { parsed = null; }\nconst clases = ['caliente','tibio','frio','revision_humana'];\nconst acciones = ['contactar_agente','enviar_opciones','pedir_datos','revision_humana'];\nconst mensaje = typeof parsed?.mensaje === 'string' ? parsed.mensaje.trim() : '';\nconst valido = parsed && clases.includes(parsed.clasificacion) && acciones.includes(parsed.accion) && mensaje.length > 0 && typeof parsed.confianza === 'number' && parsed.confianza >= 0 && parsed.confianza <= 1;\nconst promete = /confirmad[oa]s? (la )?visita|visita confirmada|disponibilidad confirmada|te (las |los )?(enviaré|enviaremos|mandaremos)|te contactaremos|se pondrá en contacto|estamos seleccionando|estoy preparando|he derivado|hemos derivado|ya (derivé|derivamos|avisamos|contactamos)/i.test(mensaje);\nconst final = valido && !promete ? parsed : {clasificacion:'revision_humana',accion:'revision_humana',mensaje:'La consulta requiere revisión humana. No puedo confirmar información adicional por este medio.',confianza:0.5};\nconst source = $('Edit Fields').first().json;\nconst tg = source.message || source.body?.message || {};\nconst chatId = tg.chat?.id || null;\nconst leadId = source.lead_id || 'demo-lead-001';\nreturn [{json:{output:JSON.stringify(final,null,2),canal:chatId?'telegram':'webhook',chat_id:chatId,session_id:chatId?'telegram:'+chatId:leadId,remitente_id:tg.from?.id || leadId}}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -388,7 +389,7 @@
         ],
         [
           {
-            "node": "Respond to Webhook",
+            "node": "If1",
             "type": "main",
             "index": 0
           }
