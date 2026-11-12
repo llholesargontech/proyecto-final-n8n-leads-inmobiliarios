@@ -9,6 +9,6 @@
 <path class="line" d="M165 115 L215 150 M165 205 L215 170 M345 160 H385 M530 160 H570 M685 160 H725 M795 160 H830 M940 160 H975 M1110 150 L1145 115 M1110 170 L1145 215"/>
 <text x="760" y="260">Gemini · Simple Memory · Simple Vector Store + embeddings</text>
 <path class="line dash" d="M885 250 V190"/>
-<text x="35" y="340">Ingesta: documento → Vector Store, con Data Loader, fragmentación y embeddings.</text>
-<text x="35" y="380">La salida de error del primer If usa Respond to Webhook; falta una rama de error específica para Telegram.</text>
+<text x="35" y="340">Ingesta: documento → Vector Store, con Data Loader y embeddings.</text>
+<text x="35" y="380">El If envía errores al selector If1 para responder por el canal de origen.</text>
 </svg>
