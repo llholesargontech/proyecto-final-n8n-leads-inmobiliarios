@@ -71,7 +71,7 @@ La carga documental esta separada en [workflow-ingesta-rag.json](workflow-ingest
 
 `Manual Trigger -> Documento base -> Simple Vector Store - Ingesta`, con Default Data Loader y embeddings conectados a la Vector Store.
 
-El `Recursive Character Text Splitter` entra como subnodo del Data Loader y los embeddings de Gemini se conectan a la Vector Store. El JSON de ingesta requiere corregir y validar su conexión principal antes de ejecutarlo: el loader es un subnodo de documentos, no un paso principal. La Simple Vector Store vive en memoria y puede perderse al reiniciar; para producción conviene una base persistente.
+El `Recursive Character Text Splitter` entra como subnodo del Data Loader y los embeddings de Gemini se conectan a la Vector Store. El JSON de ingesta tiene corregida la conexión principal; todavía falta importarlo y ejecutar una prueba para verificar la inserción y la recuperación. La Simple Vector Store vive en memoria y puede perderse al reiniciar; para producción conviene una base persistente.
 
 La memoria simple usa `lead_id` en el Webhook y `message.chat.id` en Telegram. El webhook usa un identificador de demostración cuando no se envía `lead_id`, por lo que distintas personas podrían compartir contexto si falta ese dato. En una integración real debe exigirse un identificador único y confiable; la memoria local no es adecuada para varias instancias.
 
@@ -115,7 +115,7 @@ Los tokens no están en el JSON exportado. El archivo sí contiene identificador
 1. Importar el workflow principal en n8n.
 2. Seleccionar las credenciales de Google Sheets, Gemini y Telegram.
 3. Revisar el documento y el nombre de la hoja.
-4. Corregir y ejecutar la ingesta RAG; verificar que inserte el documento y que el agente lo recupere.
+4. Importar y ejecutar la ingesta RAG; verificar que inserte el documento y que el agente lo recupere.
 5. Probar el Webhook con `lead_id` y `mensaje`.
 6. Enviar un mensaje al bot de Telegram y revisar la ejecucion.
 7. Verificar que la respuesta salga por el mismo canal de entrada.
