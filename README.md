@@ -10,7 +10,7 @@ No intenta cerrar una operacion ni confirmar una visita. Cuando la consulta no a
 
 Leer una consulta, revisar la informacion disponible y decidir como seguir lleva aproximadamente entre 5 y 8 minutos. Con unas 40 consultas por semana son alrededor de 4 horas de trabajo repetido.
 
-El workflow hace ese primer filtro en segundos. En un volumen normal puede ahorrar unas 3 horas semanales y, si llegan mas consultas, mantiene el mismo criterio sin sumar otra tarea manual. Los casos comerciales especiales siguen necesitando revision humana.
+El workflow hace ese primer filtro en segundos. En un volumen normal puede ahorrar unas 3 horas semanales y, si llegan mas consultas, mantiene el mismo criterio sin sumar otra tarea manual. Para este prototipo el costo de implementacion es principalmente el tiempo de armado y configuracion; tomando 6 horas de trabajo a un valor estimado de USD 10 por hora, son unos USD 60 iniciales. Los casos comerciales especiales siguen necesitando revision humana.
 
 ## Como queda armado
 
@@ -58,7 +58,7 @@ Una cadena simple podria redactar un texto, pero en este caso el nodo tiene que 
 
 La Simple Vector Store se usa como herramienta del agente. Los embeddings de Gemini permiten buscar los fragmentos relacionados con la consulta. En este flujo se usa el modelo `models/gemini-embedding-2`, que es el disponible en la cuenta de n8n.
 
-La base documental se carga previamente en la Vector Store del prototipo. En una version siguiente se puede separar esa carga en un workflow de ingesta con Document Loader, Text Splitter y el mismo modelo de embeddings.
+La carga documental esta separada en [workflow-ingesta-rag.json](workflow-ingesta-rag.json). Ese flujo usa Manual Trigger, Default Data Loader, Recursive Character Text Splitter, Simple Vector Store y el mismo modelo de embeddings. Primero se ejecuta la ingesta y despues se prueba el workflow principal.
 
 La memoria simple usa `lead_id` como clave de sesion y guarda las ultimas interacciones de cada lead.
 
@@ -82,13 +82,14 @@ Google Sheets tiene reintentos y queda configurado para continuar con el mensaje
 
 El If valida el mensaje y el estado de la hoja antes de dejar pasar la consulta al agente. Si no hay mensaje, si la hoja esta vacia o si la API devuelve un error, la ejecucion no queda esperando y la respuesta se mantiene en el camino de revision.
 
-El prompt tambien funciona como limite: no inventa informacion, no confirma visitas y deriva los casos ambiguos.
+El prompt tambien funciona como limite: no inventa informacion, no confirma visitas y deriva los casos ambiguos. Antes de responder, el flujo valida los campos del JSON y reemplaza clasificaciones invalidas por revision_humana. Esto evita que una salida del modelo termine confirmando una visita o una disponibilidad que no fueron verificadas.
 
 ![Resultado de prueba](capturas/resultado-prueba.png)
 
 ## Archivos
 
 - [workflow-agente-precalificacion.json](workflow-agente-precalificacion.json)
+- [workflow-ingesta-rag.json](workflow-ingesta-rag.json)
 - [resultado de prueba en JSON](capturas/resultado-prueba.json)
 - [diagrama del flujo](capturas/arquitectura.svg)
 
