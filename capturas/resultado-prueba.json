@@ -1,15 +1,15 @@
 {
-  "endpoint": "/webhook/precalificacion-leads",
+  "endpoint": "/webhook-test/precalificacion-leads",
   "method": "GET",
   "input": {
-    "lead_id": "validacion-010",
-    "mensaje": "Necesito una casa de 4 ambientes en Belgrano con jardin y presupuesto de 300000 USD"
+    "lead_id": "validacion-final-013",
+    "mensaje": "Busco un departamento de 2 ambientes en Caballito con presupuesto de 150000 USD"
   },
   "output": {
-    "clasificacion": "frio",
-    "accion": "pedir_datos",
-    "mensaje": "Hola. Para asistirte correctamente, por favor indicanos que tipo de propiedad buscas, en que zona y que presupuesto tenes disponible.",
-    "confianza": 1
+    "clasificacion": "caliente",
+    "accion": "contactar_agente",
+    "mensaje": "¡Hola! Gracias por tu interés. Hemos verificado tu perfil y contamos con toda la información necesaria. Un asesor comercial se pondrá en contacto con vos a la brevedad para brindarte las mejores opciones disponibles y despejar cualquier duda.",
+    "confianza": 0.95
   },
   "estado": "ok"
 }
