@@ -1,1 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="430" viewBox="0 0 1100 430"><rect width="1100" height="430" fill="#f6f3ee"/><style>text{font-family:Arial,sans-serif;fill:#252525}.t{font-size:22px;font-weight:bold}.s{font-size:15px}.b{fill:#fff;stroke:#555;stroke-width:2}.a{stroke:#555;stroke-width:3;fill:none;marker-end:url(#m)}</style><defs><marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#555"/></marker></defs><text x="45" y="45" class="t">Precalificacion de leads inmobiliarios</text><text x="45" y="72" class="s">flujo principal y fuentes de apoyo</text><rect x="45" y="140" width="160" height="70" rx="10" class="b"/><text x="70" y="170" class="t">Webhook</text><text x="70" y="195" class="s">consulta del lead</text><rect x="270" y="140" width="170" height="70" rx="10" class="b"/><text x="300" y="170" class="t">Edit Fields</text><text x="300" y="195" class="s">ordena los campos</text><rect x="505" y="140" width="170" height="70" rx="10" class="b"/><text x="540" y="170" class="t">AI Agent</text><text x="535" y="195" class="s">clasifica y decide</text><rect x="740" y="140" width="190" height="70" rx="10" class="b"/><text x="770" y="170" class="t">Respond Webhook</text><text x="790" y="195" class="s">JSON final</text><path d="M205 175h65M440 175h65M675 175h65" class="a"/><rect x="270" y="285" width="170" height="65" rx="10" class="b"/><text x="300" y="315" class="t">Google Sheets</text><text x="305" y="338" class="s">datos del negocio</text><path d="M355 210v75" class="a"/><rect x="505" y="285" width="170" height="65" rx="10" class="b"/><text x="535" y="315" class="t">RAG / Vector Store</text><text x="535" y="338" class="s">contexto documental</text><path d="M590 210v75" class="a"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+<rect width="1200" height="620" fill="#f6f3ee"/>
+<style>
+text{font-family:Arial,sans-serif;fill:#252525}
+.t{font-size:24px;font-weight:bold}.s{font-size:15px}.n{font-size:18px;font-weight:bold}
+.b{fill:#fff;stroke:#555;stroke-width:2}.ai{fill:#edf5ed;stroke:#4b8b57;stroke-width:2}.side{fill:#faf8f4;stroke:#777;stroke-width:2}
+.a{stroke:#555;stroke-width:3;fill:none;marker-end:url(#m)}
+.d{stroke:#777;stroke-width:2;fill:none;stroke-dasharray:7 5;marker-end:url(#m2)}
+.label{font-size:14px;fill:#555}
+</style>
+<defs>
+<marker id="m" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#555"/></marker>
+<marker id="m2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#777"/></marker>
+</defs>
+
+<text x="45" y="45" class="t">Precalificacion de leads inmobiliarios</text>
+<text x="45" y="73" class="s">flujo actual con validacion, agente y RAG</text>
+
+<rect x="40" y="135" width="150" height="70" rx="10" class="b"/>
+<text x="75" y="166" class="n">Webhook</text><text x="65" y="190" class="s">lead_id + mensaje</text>
+
+<rect x="235" y="135" width="160" height="70" rx="10" class="b"/>
+<text x="263" y="166" class="n">Edit Fields</text><text x="257" y="190" class="s">ordena la entrada</text>
+
+<rect x="440" y="135" width="175" height="70" rx="10" class="b"/>
+<text x="462" y="166" class="n">Google Sheets</text><text x="468" y="190" class="s">datos comerciales</text>
+
+<rect x="660" y="135" width="170" height="70" rx="10" class="b"/>
+<text x="700" y="166" class="n">Code</text><text x="680" y="190" class="s">unifica y valida</text>
+
+<rect x="875" y="135" width="120" height="70" rx="10" class="b"/>
+<text x="912" y="166" class="n">If</text><text x="887" y="190" class="s">datos OK</text>
+
+<path d="M190 170h45M395 170h45M615 170h45M830 170h45" class="a"/>
+
+<rect x="875" y="285" width="190" height="80" rx="10" class="ai"/>
+<text x="906" y="318" class="n">AI Agent</text><text x="897" y="343" class="s">clasifica y decide</text>
+
+<rect x="1050" y="135" width="120" height="70" rx="10" class="b"/>
+<text x="1062" y="166" class="n">Respond</text><text x="1065" y="190" class="s">JSON final</text>
+
+<path d="M935 205v80" class="a"/><text x="948" y="250" class="label">true</text>
+<path d="M995 170h55" class="a"/><text x="1003" y="158" class="label">false</text>
+<path d="M970 365v105h140V205" class="a"/><text x="985" y="455" class="label">respuesta de control</text>
+
+<rect x="650" y="455" width="190" height="70" rx="10" class="side"/>
+<text x="680" y="485" class="n">Google Gemini</text><text x="682" y="508" class="s">modelo de chat</text>
+
+<rect x="875" y="455" width="190" height="70" rx="10" class="side"/>
+<text x="900" y="485" class="n">Simple Memory</text><text x="895" y="508" class="s">sesion por lead_id</text>
+
+<rect x="420" y="285" width="220" height="80" rx="10" class="side"/>
+<text x="458" y="318" class="n">Simple Vector Store</text><text x="465" y="343" class="s">contexto documental</text>
+
+<rect x="420" y="455" width="220" height="70" rx="10" class="side"/>
+<text x="463" y="485" class="n">Gemini Embeddings</text><text x="463" y="508" class="s">gemini-embedding-2</text>
+
+<path d="M875 325H640" class="d"/><text x="730" y="314" class="label">tool RAG</text>
+<path d="M875 345H840V490" class="d"/><text x="842" y="425" class="label">memoria</text>
+<path d="M650 325H530V455" class="d"/>
+<path d="M640 490H530V365" class="d"/><text x="545" y="405" class="label">embeddings</text>
+<path d="M650 490H650V525" class="d"/>
+</svg>
