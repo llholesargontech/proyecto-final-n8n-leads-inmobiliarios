@@ -1,31 +1,31 @@
 {
-  "descripcion": "Resultados de pruebas de los dos canales. Los identificadores personales se omitieron.",
+  "descripcion": "Pruebas de producción del flujo publicado. Los identificadores de Telegram se omitieron.",
   "casos": [
     {
       "canal": "webhook",
       "metodo": "GET",
       "entrada": {
-        "lead_id": "prueba-aislada",
-        "mensaje": "Busco un departamento en Palermo con presupuesto 150000"
+        "lead_id": "final-control-3",
+        "mensaje": "Busco una casa en Belgrano con presupuesto 200000"
       },
       "respuesta_http": {
         "status": 200,
         "body": {
-          "output": "{\n  \"clasificacion\": \"tibio\",\n  \"accion\": \"enviar_opciones\",\n  \"mensaje\": \"Perfecto, ya tomamos nota de tu búsqueda: un departamento en Palermo con un presupuesto de USD 150.000. Estamos seleccionando las mejores opciones disponibles que se ajusten a tus criterios y te las enviaremos a la brevedad.\",\n  \"confianza\": 1\n}",
+          "output": "{\n  \"clasificacion\": \"caliente\",\n  \"accion\": \"enviar_opciones\",\n  \"mensaje\": \"Muchas gracias por la información brindada. Los datos sobre su búsqueda de una casa en Belgrano con presupuesto de 200.000 ya han sido registrados y requieren una evaluación por parte de nuestro equipo.\",\n  \"confianza\": 0.95\n}",
           "canal": "webhook",
           "chat_id": null,
-          "session_id": "prueba-aislada",
-          "remitente_id": "prueba-aislada"
+          "session_id": "final-control-3",
+          "remitente_id": "final-control-3"
         }
       }
     },
     {
       "canal": "telegram",
       "entrada": {
-        "mensaje": "Hola, busco un departamento en Palermo con presupuesto 150000"
+        "mensaje": "¿Cuál es la política para confirmar visitas?"
       },
-      "mensaje_recibido": "¡Hola! Perfecto, ya tomé nota de que buscas un departamento en Palermo con un presupuesto de 150.000. Estoy preparando las mejores opciones disponibles que se ajusten a tus criterios y te las enviaré enseguida.",
-      "observacion": "Texto recibido en el chat durante la ejecución de prueba; se omitieron los identificadores."
+      "mensaje_recibido": "Nuestra política comercial establece que no se confirman visitas ni se proporciona disponibilidad de forma directa en esta etapa. Este tipo de consultas requieren una revisión humana por parte de un asesor.",
+      "observacion": "Texto recibido durante la prueba; se omitió el identificador del chat."
     }
   ]
 }
