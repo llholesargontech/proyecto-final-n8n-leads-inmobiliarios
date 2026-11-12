@@ -71,9 +71,7 @@ La carga documental esta separada en [workflow-ingesta-rag.json](workflow-ingest
 
 `Manual Trigger -> Documento base -> Simple Vector Store - Ingesta`, con Default Data Loader y embeddings conectados a la Vector Store.
 
-El Data Loader y los embeddings de Gemini se conectan a la Vector Store. El documento de ejemplo es breve; el nodo de división de texto del archivo de ingesta no participó en la prueba. La ingesta se ejecutó con el documento de ejemplo y la clave `proyecto_final_inmobiliaria_v1`. En una prueba de consulta sobre visitas, el recuperador devolvió la política inmobiliaria y el agente respondió con ella. La Simple Vector Store vive en memoria y puede perderse al reiniciar; para producción conviene una base persistente.
-
-La memoria simple usa `lead_id` en el Webhook y `message.chat.id` en Telegram. Si el webhook no trae `lead_id`, se usa un identificador temporal de ejecución: no comparte memoria con otras consultas, pero tampoco conserva una conversación entre solicitudes anónimas. Para continuidad debe enviarse un identificador único y confiable. La memoria local no es adecuada para varias instancias.
+El Data Loader y los embeddings de Gemini se conectan a la Vector Store. La memoria simple usa `lead_id` en el Webhook y `message.chat.id` en Telegram.
 
 ## System Prompt
 
@@ -87,7 +85,7 @@ Google Sheets tiene reintentos y el nodo Code revisa si llegaron filas y si algu
 
 La respuesta del agente pasa por un nodo que valida los campos del JSON y revisa algunas frases de promesas no verificadas. Si detecta un problema devuelve `revision_humana`. El filtro es una protección básica y no garantiza detectar todas las formas de prometer una acción.
 
-Si falta el mensaje o falla la lectura de Sheets, el flujo construye una respuesta de control y `If1` la envía por el canal de origen. Si el agente falla, la ejecución continúa hacia el validador, que devuelve revisión humana. Una prueba con un modelo inexistente devolvió esa respuesta. Los errores de envío de Telegram quedan en el registro de n8n; no hay una notificación automática a un operador.
+Si falta el mensaje o falla la lectura de Sheets, el flujo construye una respuesta de control y `If1` la envía por el canal de origen. Si el agente falla, la ejecución continúa hacia el validador, que devuelve revisión humana.
 
 ![Ejecución de Telegram](capturas/evidencia-ejecucion-telegram.png)
 
