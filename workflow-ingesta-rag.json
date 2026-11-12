@@ -109,7 +109,7 @@
       "main": [
         [
           {
-            "node": "Default Data Loader",
+            "node": "Simple Vector Store - Ingesta",
             "type": "main",
             "index": 0
           }
