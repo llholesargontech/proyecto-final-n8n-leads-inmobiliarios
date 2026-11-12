@@ -71,31 +71,23 @@ La carga documental esta separada en [workflow-ingesta-rag.json](workflow-ingest
 
 `Manual Trigger -> Documento base -> Simple Vector Store - Ingesta`, con Default Data Loader y embeddings conectados a la Vector Store.
 
-El `Recursive Character Text Splitter` entra como subnodo del Data Loader y los embeddings de Gemini se conectan a la Vector Store. El JSON de ingesta tiene corregida la conexión principal; todavía falta importarlo y ejecutar una prueba para verificar la inserción y la recuperación. La Simple Vector Store vive en memoria y puede perderse al reiniciar; para producción conviene una base persistente.
+El Data Loader y los embeddings de Gemini se conectan a la Vector Store. El documento de ejemplo es breve; el nodo de división de texto del archivo de ingesta no participó en la prueba. La ingesta se ejecutó con el documento de ejemplo y la clave `proyecto_final_inmobiliaria_v1`. En una prueba de consulta sobre visitas, el recuperador devolvió la política inmobiliaria y el agente respondió con ella. La Simple Vector Store vive en memoria y puede perderse al reiniciar; para producción conviene una base persistente.
 
-La memoria simple usa `lead_id` en el Webhook y `message.chat.id` en Telegram. El webhook usa un identificador de demostración cuando no se envía `lead_id`, por lo que distintas personas podrían compartir contexto si falta ese dato. En una integración real debe exigirse un identificador único y confiable; la memoria local no es adecuada para varias instancias.
+La memoria simple usa `lead_id` en el Webhook y `message.chat.id` en Telegram. Si el webhook no trae `lead_id`, se usa un identificador temporal de ejecución: no comparte memoria con otras consultas, pero tampoco conserva una conversación entre solicitudes anónimas. Para continuidad debe enviarse un identificador único y confiable. La memoria local no es adecuada para varias instancias.
 
 ## System Prompt
 
 ```text
-Sos un agente de precalificacion comercial para una inmobiliaria. La entrada incluye datos calculados por nodos anteriores.
-
-Regla prioritaria: si datos_completos=true, consideralo una validacion confiable. En ese caso esta prohibido clasificar como frio, usar pedir_datos o volver a preguntar tipo de propiedad, zona o presupuesto. Debes clasificar como tibio y usar enviar_opciones, o como caliente y usar contactar_agente.
-
-Si datos_completos=false, usa pedir_datos solo por los datos que falten. Analiza tambien Google Sheets y el contexto RAG, pero no contradigas la validacion previa salvo que encuentres una contradiccion clara. Si la base documental no tiene coincidencias, continua con los datos disponibles.
-
-No inventes precios, disponibilidad, requisitos ni caracteristicas. No confirmes visitas ni prometas operaciones. Responde en español, claro y breve.
-
-Devuelve solo JSON valido, sin markdown, con clasificacion, accion, mensaje y confianza. La confianza debe ser un numero entre 0 y 1.
+Sos un agente de precalificación para una inmobiliaria. Respondé en español, breve y claro. Usá la memoria de esta conversación para conservar tipo de propiedad, zona y presupuesto ya indicados. La validación datos_completos solo analiza el mensaje actual, no el historial; no repitas preguntas si el dato aparece en memoria. Si preguntan qué dato mencionaron, respondé según el historial. Consultá la herramienta documental para políticas. Si no devuelve información suficiente para una pregunta documental, indicá que no está disponible y recomendá revisión humana; no inventes ni pidas datos como condición para responder. Si hay ambigüedad o la consulta excede tu alcance, indicá que requiere revisión humana sin afirmar que alguien fue avisado o que ya se derivó. Podés clasificar como frio, tibio, caliente o revision_humana y elegir pedir_datos, enviar_opciones, contactar_agente o revision_humana. La acción es una recomendación interna: no afirmes que se preparan o enviarán opciones, que alguien fue contactado o que se confirmó una visita. No inventes disponibilidad, precios, moneda ni plazos. Si los datos están completos, agradecé e indicá que requiere evaluación. Devolvé solo JSON válido con clasificacion, accion, mensaje y confianza entre 0 y 1.
 ```
 
 ## Controles y errores
 
 Google Sheets tiene reintentos y el nodo Code revisa si llegaron filas y si alguna contiene un error. El primer If valida el mensaje y el estado de la hoja antes de dejar pasar la consulta al agente.
 
-La respuesta del agente pasa por un nodo de validacion que revisa los campos del JSON y reemplaza clasificaciones invalidas o mensajes que prometan una visita por `revision_humana`. Esto evita que una salida del modelo termine confirmando una visita o una disponibilidad que no fueron verificadas.
+La respuesta del agente pasa por un nodo que valida los campos del JSON y revisa algunas frases de promesas no verificadas. Si detecta un problema devuelve `revision_humana`. El filtro es una protección básica y no garantiza detectar todas las formas de prometer una acción.
 
-Si falla el envío de Telegram, el error queda visible en la ejecución de n8n. La rama de datos inválidos termina en Respond to Webhook, por lo que falta una salida de error específica para Telegram. Las caídas del modelo o de la Vector Store también requieren un manejo dedicado; hoy no hay un Error Trigger que las capture.
+Si falta el mensaje o falla la lectura de Sheets, el flujo construye una respuesta de control y `If1` la envía por el canal de origen. Si el agente falla, la ejecución continúa hacia el validador, que devuelve revisión humana. Una prueba con un modelo inexistente devolvió esa respuesta. Los errores de envío de Telegram quedan en el registro de n8n; no hay una notificación automática a un operador.
 
 ![Ejecución de Telegram](capturas/evidencia-ejecucion-telegram.png)
 
@@ -115,11 +107,11 @@ El workflow se comparte sin credenciales ni referencias a una hoja de cálculo. 
 1. Importar el workflow principal en n8n.
 2. Seleccionar las credenciales de Google Sheets, Gemini y Telegram.
 3. Revisar el documento y el nombre de la hoja.
-4. Importar y ejecutar la ingesta RAG; verificar que inserte el documento y que el agente lo recupere.
+4. Importar y ejecutar la ingesta RAG; verificar que inserte el documento con la clave indicada y que el agente lo recupere.
 5. Probar el Webhook con `lead_id` y `mensaje`.
 6. Enviar un mensaje al bot de Telegram y revisar la ejecucion.
 7. Verificar que la respuesta salga por el mismo canal de entrada.
 
 ## Estado de las pruebas
 
-Las capturas muestran el flujo y ejecuciones desde Telegram y Webhook. La prueba de Telegram recibió una respuesta en el chat y la prueba del Webhook devolvió HTTP 200. Queda pendiente comprobar la ingesta del documento y una recuperación que dependa de su contenido, además de probar aislamiento de memoria entre personas distintas.
+Se probaron webhook y Telegram, la ingesta y recuperación de la política, una consulta sin texto por ambos canales y una falla simulada del modelo. Una repregunta en Telegram recordó el barrio anterior; una sesión de webhook diferente no recibió ese dato. Las capturas actuales deben reemplazarse por las de la versión final. No se probó concurrencia ni uso con múltiples instancias.
