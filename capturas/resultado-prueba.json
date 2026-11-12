@@ -1,0 +1,15 @@
+{
+  "endpoint": "/webhook/precalificacion-leads",
+  "method": "GET",
+  "input": {
+    "lead_id": "validacion-010",
+    "mensaje": "Necesito una casa de 4 ambientes en Belgrano con jardin y presupuesto de 300000 USD"
+  },
+  "output": {
+    "clasificacion": "frio",
+    "accion": "pedir_datos",
+    "mensaje": "Hola. Para asistirte correctamente, por favor indicanos que tipo de propiedad buscas, en que zona y que presupuesto tenes disponible.",
+    "confianza": 1
+  },
+  "estado": "ok"
+}
