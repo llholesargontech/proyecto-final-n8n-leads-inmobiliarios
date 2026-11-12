@@ -69,14 +69,55 @@
       "position": [
         -300,
         160
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const rows = $input.all().map(item => item.json);\nconst source = $(\"Edit Fields\").first().json;\nconst leadMessage = source.mensaje || \"\";\nconst leadId = source.lead_id || \"demo-lead-001\";\nconst normalized = leadMessage.toLowerCase();\nconst hasProperty = /(departamento|casa|ph|local|terreno|oficina)/.test(normalized);\nconst hasZone = /(caballito|palermo|belgrano|recoleta|zona|barrio)/.test(normalized);\nconst hasBudget = /[0-9]/.test(normalized);\nconst datosCompletos = hasProperty && hasZone && hasBudget;\nconst accionSugerida = datosCompletos ? \"enviar_opciones\" : \"pedir_datos\";\nconst sheetOk = rows.length > 0 && !rows.some(row => row.error || row.errorMessage || row.statusCode >= 400);\nconst valid = leadMessage.trim().length > 0 && sheetOk;\nreturn [{ json: { valid, sheet_ok: sheetOk, lead_id: leadId, mensaje: leadMessage, datos_completos: datosCompletos, accion_sugerida: accionSugerida, sheet_data: rows } }];"
+      },
+      "id": "e44abcd9-2a2e-4e76-9f30-102816788738",
+      "name": "Code in JavaScript",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.valid }}",
+              "operation": "isTrue"
+            }
+          ]
+        },
+        "options": {
+          "convertTypes": true
+        }
+      },
+      "id": "574d8d9e-fe6e-4e31-a0c4-22d746b2c084",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        220,
+        420
       ]
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "Mensaje del lead: {{ $json.query?.mensaje || $json.mensaje || $json.body?.mensaje || 'sin mensaje' }}. Identificador: {{ $json.query?.lead_id || $json.lead_id || $json.body?.lead_id || 'sin identificador' }}. Analiza esta consulta con el contexto de la base documental y las propiedades disponibles. No pidas datos que ya aparecen en el mensaje. Devuelve unicamente JSON valido, sin markdown ni texto adicional, con las claves clasificacion, accion, mensaje y confianza.",
+        "text": "Mensaje del lead: {{ $json.mensaje || \"sin mensaje\" }}. Identificador: {{ $json.lead_id || \"sin identificador\" }}. Validacion previa del flujo: datos_completos={{ $json.datos_completos }}, accion_sugerida={{ $json.accion_sugerida }}. Datos de Google Sheets: {{ JSON.stringify($json.sheet_data || []) }}. Si datos_completos es true, no pidas informacion adicional y usa la accion_sugerida o contactar_agente. Usa el contexto de la base documental cuando exista. Devuelve solo JSON valido con clasificacion, accion, mensaje y confianza.",
         "options": {
-          "systemMessage": "Sos un agente de precalificacion comercial para una inmobiliaria. Analiza consultas de leads y elige una clasificacion y una accion. Usa solo los datos recibidos, Google Sheets y el contexto recuperado. No inventes precios, disponibilidad ni requisitos. Si faltan datos o hay ambiguedad, usa pedir_datos o revision_humana. No confirmes visitas ni prometas operaciones. Responde solo JSON valido con clasificacion, accion, mensaje y confianza. No uses markdown ni texto adicional."
+          "systemMessage": "Sos un agente de precalificacion comercial para una inmobiliaria. La entrada incluye datos calculados por nodos anteriores. Regla prioritaria: si datos_completos=true, consideralo una validacion confiable. En ese caso esta prohibido clasificar como frio, usar pedir_datos o volver a preguntar tipo de propiedad, zona o presupuesto. Debes clasificar como tibio y usar enviar_opciones, o como caliente y usar contactar_agente. Si datos_completos=false, usa pedir_datos solo por los datos que falten. Analiza tambien Google Sheets y el contexto RAG, pero no contradigas la validacion previa salvo que encuentres una contradiccion clara. Si la base documental no tiene coincidencias, continua con los datos disponibles. No inventes precios, disponibilidad, requisitos ni caracteristicas. No confirmes visitas ni prometas operaciones. Responde en español, claro y breve. Devuelve solo JSON valido, sin markdown, con clasificacion, accion, mensaje y confianza. La confianza debe ser un numero entre 0 y 1."
         }
       },
       "id": "89b8db6e-70bb-419a-95b5-940a8cee8291",
@@ -84,7 +125,7 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2.2,
       "position": [
-        0,
+        500,
         160
       ]
     },
@@ -98,7 +139,7 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.2,
       "position": [
-        -40,
+        460,
         400
       ]
     },
@@ -108,13 +149,13 @@
         "sessionKey": "={{ $json.lead_id || 'demo-lead-001' }}",
         "contextWindowLength": 5
       },
-      "id": "0ed58474-86b5-4342-b77c-858ded09cc5c",
+      "id": "dd31289d-323a-4a5c-8b3b-ae5fde20b894",
       "name": "Simple Memory",
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.3,
       "position": [
-        120,
-        400
+        690,
+        620
       ]
     },
     {
@@ -129,7 +170,7 @@
       "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
       "typeVersion": 1.1,
       "position": [
-        180,
+        740,
         -40
       ]
     },
@@ -143,7 +184,7 @@
       "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
       "typeVersion": 1,
       "position": [
-        300,
+        820,
         400
       ]
     },
@@ -156,7 +197,7 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        420,
+        820,
         160
       ]
     }
@@ -170,13 +211,6 @@
             "type": "main",
             "index": 0
           }
-        ],
-        [
-          {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
         ]
       ]
     },
@@ -185,6 +219,46 @@
         [
           {
             "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
             "type": "main",
             "index": 0
           }
