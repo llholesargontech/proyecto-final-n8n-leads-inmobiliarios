@@ -67,7 +67,7 @@
     {
       "parameters": {
         "mode": "insert",
-        "memoryKey": "vector_store_key"
+        "memoryKey": "proyecto_final_inmobiliaria_v1"
       },
       "id": "ingesta-store",
       "name": "Simple Vector Store - Ingesta",
