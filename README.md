@@ -12,7 +12,9 @@ No intenta cerrar una operacion ni confirmar una visita. Cuando la consulta no a
 
 Leer una consulta, revisar la informacion disponible y decidir como seguir lleva aproximadamente entre 5 y 8 minutos. Con unas 40 consultas por semana son alrededor de 4 horas de trabajo repetido.
 
-El workflow hace ese primer filtro en segundos. En un volumen normal puede ahorrar unas 3 horas semanales y, si llegan mas consultas, mantiene el mismo criterio sin sumar otra tarea manual. Los casos comerciales especiales siguen necesitando revision humana.
+Si se estiman 8 horas iniciales de armado y pruebas, y 3 horas ahorradas por semana, la inversión de tiempo se recuperaría en unas 2,7 semanas. Son estimaciones, no tiempos medidos. El ahorro neto después de cuatro semanas sería de unas 4 horas, sin contar mantenimiento ni costos del proveedor.
+
+El workflow hace ese primer filtro en segundos. En un volumen normal puede ahorrar unas 3 horas semanales y, si llegan mas consultas, mantiene el mismo criterio sin sumar otra tarea manual. Los casos comerciales especiales siguen necesitando revision humana. Con menos de unas 4 consultas semanales el ahorro sería menor a unos 18 minutos por semana, y el mantenimiento puede superar el beneficio.
 
 ## Como queda armado
 
@@ -28,7 +30,7 @@ Desde `If1` se separa el canal de salida:
 - si la entrada fue por Telegram, se usa `Send a text message`
 - si la entrada fue por Webhook, se usa `Respond to Webhook`
 
-Google Sheets aporta una segunda fuente con datos comerciales. El nodo Code ordena las filas, conserva el mensaje original, identifica el lead y calcula si ya estan presentes el tipo de propiedad, la zona y el presupuesto.
+Google Sheets aporta una fuente adicional de datos. El nodo Code revisa si llegaron filas, conserva el mensaje original, identifica el lead y calcula si aparecen el tipo de propiedad, la zona y el presupuesto. Esa comprobación es aproximada: un número no necesariamente es un presupuesto. Las filas completas no se envían al prompt del agente.
 
 ![Canvas del workflow](capturas/flow-n8n.png)
 
@@ -53,9 +55,9 @@ Para Telegram se envia el campo `mensaje`. Para el Webhook se devuelve el JSON c
 
 ## Eleccion del modelo
 
-Para este prototipo se eligio Gemini en la nube. El volumen esperado es bajo y el costo por consulta es menor que mantener una maquina con Ollama encendida. Tambien simplifica la conexion con embeddings y el uso de n8n Cloud.
+Para este prototipo se eligio Gemini en la nube. Para el volumen de prueba, la nube evita instalar y mantener una máquina con Ollama. El costo depende de los límites vigentes del servicio y del uso real; no se comparó con una medición de hardware local. Tambien simplifica la conexion con embeddings y el uso de n8n Cloud.
 
-La contra es que el mensaje sale hacia un proveedor externo y que la respuesta depende de internet. Por eso el flujo no envia datos personales innecesarios, usa un identificador de lead y agrega controles antes de responder. Si el volumen sube mucho conviene evaluar un modelo local o una arquitectura hibrida.
+La contra es que el mensaje sale hacia un proveedor externo y que la respuesta depende de internet. El mensaje y un identificador se envían al modelo, por lo que deben tratarse como datos potencialmente personales. El prompt no incluye las filas completas de Sheets. Si el volumen sube mucho conviene evaluar un modelo local o una arquitectura hibrida.
 
 ## Por que un AI Agent
 
@@ -63,15 +65,15 @@ Una cadena simple podria redactar un texto, pero en este caso el nodo tiene que 
 
 ## RAG y memoria
 
-La Simple Vector Store se usa como herramienta del agente. Los embeddings de Gemini permiten buscar los fragmentos relacionados con la consulta. La base contiene la politica comercial del proyecto: no inventar precios ni disponibilidad, no confirmar visitas y derivar los casos ambiguos.
+La Simple Vector Store se usa como herramienta del agente. Los embeddings de Gemini permiten buscar los fragmentos relacionados con la consulta. El documento de ingesta describe la política comercial: no inventar precios ni disponibilidad, no confirmar visitas y derivar casos ambiguos. La recuperación depende de que la base esté cargada en la misma instancia.
 
 La carga documental esta separada en [workflow-ingesta-rag.json](workflow-ingesta-rag.json). Ese workflow tiene este recorrido:
 
-`Manual Trigger -> Documento base -> Default Data Loader -> Simple Vector Store - Ingesta`
+`Manual Trigger -> Documento base -> Simple Vector Store - Ingesta`, con Default Data Loader y embeddings conectados a la Vector Store.
 
-El `Recursive Character Text Splitter` entra como subnodo del Data Loader y los embeddings de Gemini se conectan a la Vector Store. Primero se ejecuta la ingesta y despues se prueba el workflow principal.
+El `Recursive Character Text Splitter` entra como subnodo del Data Loader y los embeddings de Gemini se conectan a la Vector Store. El JSON de ingesta requiere corregir y validar su conexión principal antes de ejecutarlo: el loader es un subnodo de documentos, no un paso principal. La Simple Vector Store vive en memoria y puede perderse al reiniciar; para producción conviene una base persistente.
 
-La memoria simple usa `lead_id` en el Webhook y `message.chat.id` en Telegram. De esta forma las conversaciones no se mezclan entre leads.
+La memoria simple usa `lead_id` en el Webhook y `message.chat.id` en Telegram. El webhook usa un identificador de demostración cuando no se envía `lead_id`, por lo que distintas personas podrían compartir contexto si falta ese dato. En una integración real debe exigirse un identificador único y confiable; la memoria local no es adecuada para varias instancias.
 
 ## System Prompt
 
@@ -93,9 +95,11 @@ Google Sheets tiene reintentos y el nodo Code revisa si llegaron filas y si algu
 
 La respuesta del agente pasa por un nodo de validacion que revisa los campos del JSON y reemplaza clasificaciones invalidas o mensajes que prometan una visita por `revision_humana`. Esto evita que una salida del modelo termine confirmando una visita o una disponibilidad que no fueron verificadas.
 
-Si Telegram no entrega un mensaje valido, el flujo no intenta responder con un chat inexistente. Si falla el envio, el error queda visible en la ejecucion de n8n para su revision.
+Si falla el envío de Telegram, el error queda visible en la ejecución de n8n. La rama de datos inválidos termina en Respond to Webhook, por lo que falta una salida de error específica para Telegram. Las caídas del modelo o de la Vector Store también requieren un manejo dedicado; hoy no hay un Error Trigger que las capture.
 
-![Resultado de prueba](capturas/resultado-prueba.png)
+![Ejecución de Telegram](capturas/evidencia-ejecucion-telegram.png)
+
+![Ejecución del webhook](capturas/evidencia-ejecucion-webhook.png)
 
 ## Archivos
 
@@ -104,25 +108,18 @@ Si Telegram no entrega un mensaje valido, el flujo no intenta responder con un c
 - [resultado de prueba en JSON](capturas/resultado-prueba.json)
 - [diagrama del flujo](capturas/arquitectura.svg)
 
-Las credenciales, tokens y datos personales no se incluyen en el repositorio. Al importar los workflows hay que seleccionar las credenciales propias de Google Sheets, Gemini y Telegram.
+Los tokens no están en el JSON exportado. El archivo sí contiene identificadores y referencias a la hoja y a las credenciales de n8n; conviene revisarlos antes de compartir el repositorio. Al importar los workflows hay que seleccionar las credenciales propias de Google Sheets, Gemini y Telegram.
 
 ## Como probarlo
 
 1. Importar el workflow principal en n8n.
 2. Seleccionar las credenciales de Google Sheets, Gemini y Telegram.
 3. Revisar el documento y el nombre de la hoja.
-4. Ejecutar la ingesta RAG una vez.
+4. Corregir y ejecutar la ingesta RAG; verificar que inserte el documento y que el agente lo recupere.
 5. Probar el Webhook con `lead_id` y `mensaje`.
 6. Enviar un mensaje al bot de Telegram y revisar la ejecucion.
 7. Verificar que la respuesta salga por el mismo canal de entrada.
 
-## Evidencias pendientes de actualizar
+## Estado de las pruebas
 
-Las capturas que estan en la carpeta `capturas` corresponden a la version anterior del flujo. Para dejar el repositorio alineado con la version actual faltan:
-
-- una captura del canvas completo donde se vean el Webhook y el Telegram Trigger
-- una captura de una ejecucion real iniciada desde Telegram donde se vea el mensaje recibido y la respuesta
-- una captura del nodo `Send a text message` con la salida correcta
-- si es posible, una captura del workflow de ingesta RAG ejecutado correctamente
-
-No se deben mostrar tokens, credenciales, correos, telefonos ni datos reales de leads en las capturas.
+Las capturas muestran el flujo y ejecuciones desde Telegram y Webhook. La prueba de Telegram recibió una respuesta en el chat y la prueba del Webhook devolvió HTTP 200. Queda pendiente comprobar la ingesta del documento y una recuperación que dependa de su contenido, además de probar aislamiento de memoria entre personas distintas.
