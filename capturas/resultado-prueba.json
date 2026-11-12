@@ -1,15 +1,31 @@
 {
-  "endpoint": "/webhook-test/precalificacion-leads",
-  "method": "GET",
-  "input": {
-    "lead_id": "validacion-final-013",
-    "mensaje": "Busco un departamento de 2 ambientes en Caballito con presupuesto de 150000 USD"
-  },
-  "output": {
-    "clasificacion": "caliente",
-    "accion": "contactar_agente",
-    "mensaje": "¡Hola! Gracias por tu interés. Hemos verificado tu perfil y contamos con toda la información necesaria. Un asesor comercial se pondrá en contacto con vos a la brevedad para brindarte las mejores opciones disponibles y despejar cualquier duda.",
-    "confianza": 0.95
-  },
-  "estado": "ok"
+  "descripcion": "Resultados de pruebas de los dos canales. Los identificadores personales se omitieron.",
+  "casos": [
+    {
+      "canal": "webhook",
+      "metodo": "GET",
+      "entrada": {
+        "lead_id": "prueba-aislada",
+        "mensaje": "Busco un departamento en Palermo con presupuesto 150000"
+      },
+      "respuesta_http": {
+        "status": 200,
+        "body": {
+          "output": "{\n  \"clasificacion\": \"tibio\",\n  \"accion\": \"enviar_opciones\",\n  \"mensaje\": \"Perfecto, ya tomamos nota de tu búsqueda: un departamento en Palermo con un presupuesto de USD 150.000. Estamos seleccionando las mejores opciones disponibles que se ajusten a tus criterios y te las enviaremos a la brevedad.\",\n  \"confianza\": 1\n}",
+          "canal": "webhook",
+          "chat_id": null,
+          "session_id": "prueba-aislada",
+          "remitente_id": "prueba-aislada"
+        }
+      }
+    },
+    {
+      "canal": "telegram",
+      "entrada": {
+        "mensaje": "Hola, busco un departamento en Palermo con presupuesto 150000"
+      },
+      "mensaje_recibido": "¡Hola! Perfecto, ya tomé nota de que buscas un departamento en Palermo con un presupuesto de 150.000. Estoy preparando las mejores opciones disponibles que se ajusten a tus criterios y te las enviaré enseguida.",
+      "observacion": "Texto recibido en el chat durante la ejecución de prueba; se omitieron los identificadores."
+    }
+  ]
 }
