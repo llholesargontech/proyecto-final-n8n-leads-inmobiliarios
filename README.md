@@ -108,7 +108,7 @@ Si falla el envío de Telegram, el error queda visible en la ejecución de n8n. 
 - [resultado de prueba en JSON](capturas/resultado-prueba.json)
 - [diagrama del flujo](capturas/arquitectura.svg)
 
-Los tokens no están en el JSON exportado. El archivo sí contiene identificadores y referencias a la hoja y a las credenciales de n8n; conviene revisarlos antes de compartir el repositorio. Al importar los workflows hay que seleccionar las credenciales propias de Google Sheets, Gemini y Telegram.
+El workflow se comparte sin credenciales ni referencias a una hoja de cálculo. Al importarlo, hay que seleccionar las credenciales propias de Google Sheets, Gemini y Telegram y configurar el documento y la hoja en el nodo de Google Sheets.
 
 ## Como probarlo
 
